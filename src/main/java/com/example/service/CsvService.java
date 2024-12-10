@@ -1,0 +1,130 @@
+package com.example.service;
+
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.beans.property.SimpleStringProperty;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+public class CsvService {
+
+    private static final long SMALL_FILE_SIZE = 10 * 1024; // 10 KB
+    private static final long MEDIUM_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+    private static final int NUM_THREADS = 4; // Çoklu iş parçacığı sayısı
+
+    public void processFile(File file, TableView<String[]> tableView) {
+        try {
+            long fileSize = Files.size(file.toPath());
+
+            long startTime = System.nanoTime();
+
+            if (fileSize <= SMALL_FILE_SIZE) {
+                readAndDisplaySmallCSV(file, tableView);
+            } else if (fileSize <= MEDIUM_FILE_SIZE) {
+                readAndDisplayBufferedCSV(file, tableView);
+            } else {
+                readAndDisplayLargeCSVParallel(file, tableView);
+            }
+
+            long endTime = System.nanoTime();
+            long duration = (endTime - startTime) / 1_000_000;
+            System.out.println("File processed in " + duration + " ms");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void readAndDisplaySmallCSV(File file, TableView<String[]> tableView) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            displayCSVContent(br.lines(), tableView, "Small File");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void readAndDisplayBufferedCSV(File file, TableView<String[]> tableView) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file), 8192)) {
+            displayCSVContent(br.lines(), tableView, "Buffered File");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void readAndDisplayLargeCSVParallel(File file, TableView<String[]> tableView) {
+        ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
+        try (Stream<String> lines = Files.lines(file.toPath())) {
+            List<Future<Void>> futures = new ArrayList<>();
+
+            List<String> allLines = lines.collect(Collectors.toList());
+            int chunkSize = allLines.size() / NUM_THREADS;
+
+            for (int i = 0; i < NUM_THREADS; i++) {
+                final int start = i * chunkSize;
+                final int end = (i == NUM_THREADS - 1) ? allLines.size() : (i + 1) * chunkSize;
+
+                futures.add(executor.submit(() -> {
+                    processLinesInChunk(allLines.subList(start, end), tableView);
+                    return null;
+                }));
+            }
+
+            for (Future<Void> future : futures) {
+                future.get();
+            }
+
+            executor.shutdown();
+
+        } catch (IOException | InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void processLinesInChunk(List<String> lines, TableView<String[]> tableView) {
+        boolean[] isHeader = {true};
+        for (String line : lines) {
+            String[] values = line.split(",");
+            if (isHeader[0]) {
+                setupTableColumns(values, tableView);
+                isHeader[0] = false;
+            } else {
+                tableView.getItems().add(values);
+            }
+        }
+    }
+
+    private void displayCSVContent(Stream<String> lines, TableView<String[]> tableView, String fileType) {
+        boolean[] isHeader = {true};
+        for (String line : (Iterable<String>) lines::iterator) {
+            String[] values = line.split(",");
+            if (isHeader[0]) {
+                setupTableColumns(values, tableView);
+                isHeader[0] = false;
+            } else {
+                tableView.getItems().add(values);
+            }
+        }
+    }
+
+    private void setupTableColumns(String[] headers, TableView<String[]> tableView) {
+        tableView.getColumns().clear();
+
+        for (String header : headers) {
+            TableColumn<String[], String> column = new TableColumn<>(header);
+            final int columnIndex = tableView.getColumns().size();
+
+            column.setCellValueFactory(cellData -> {
+                String[] row = cellData.getValue();
+                return columnIndex < row.length ? new SimpleStringProperty(row[columnIndex]) : null;
+            });
+
+            tableView.getColumns().add(column);
+        }
+    }
+}
