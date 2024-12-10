@@ -13,11 +13,14 @@ public class App extends Application {
     private static Scene scene;
 
     @Override
-    public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML("primary"), 640, 480);
-        stage.setScene(scene);
-        stage.show();
+    public void start(Stage primaryStage) throws Exception {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/example/primary.fxml"));
+        Scene scene = new Scene(fxmlLoader.load());
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("CSV Reader");
+        primaryStage.show();
     }
+
 
     public static void setRoot(String fxml) throws IOException {
         scene.setRoot(loadFXML(fxml));
@@ -31,5 +34,4 @@ public class App extends Application {
     public static void main(String[] args) {
         launch();
     }
-
 }

@@ -45,18 +45,13 @@
    <!-- Yükleme ve Haritalama Bölümü -->
    <VBox alignment="TOP_LEFT" spacing="10">
       <Label text="Import CSV File" style="-fx-font-size: 18px;"/>
-      <Button text="Upload a file"/>
+      <!-- Yükleme Butonu -->
+      <Button fx:id="uploadButton" text="Upload a file" style="-fx-background-color: #007ACC; -fx-text-fill: white;"/>
 
       <Label text="Mapping Data" style="-fx-font-size: 16px;"/>
       <!-- CSV sütunlarına haritalama işlemi -->
-      <TableView fx:id="mappingTable">
-         <columns>
-            <TableColumn text="Full Name"/>
-            <TableColumn text="First Name"/>
-            <TableColumn text="Country"/>
-            <TableColumn text="Email Address"/>
-            <TableColumn text="Phone"/>
-         </columns>
+      <TableView fx:id="tableView">
+         <!-- Sütunlar Dinamik Olarak Controller'da Eklenecek -->
       </TableView>
    </VBox>
 
