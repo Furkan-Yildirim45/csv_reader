@@ -63,6 +63,7 @@ public class PrimaryController {
         // CSV Yükleme Butonu
         uploadButton.setOnAction(event -> loadCSVFile());
         addButton.setOnAction(event -> showLoginPopup());
+        userInfoLabel.setText("Uknown User");
 
         // MongoDB Tablosu Ayarları
         if (idColumn != null && nameColumn != null) {
@@ -70,11 +71,6 @@ public class PrimaryController {
             nameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
         }
 
-        // MongoDB Kullanıcıları Yükle
-        loadUsers();
-        Platform.runLater(() -> {
-            mongoTableView.setItems(userData);
-        });
     }
 
     private void loadCSVFile() {
@@ -151,6 +147,15 @@ public class PrimaryController {
         }
     }
 
+    public void updateUserInfo(User user) {
+        if (user != null) {
+            // Kullanıcı bilgilerini ekranda göster
+            userInfoLabel.setText("Welcome: " + user.getUsername());
+        } else {
+            // Kullanıcı bilgisi boşsa etiketleri temizle
+            userInfoLabel.setText("No user logged in");
+        }
+    }
 
     private void addUser() {
         try {

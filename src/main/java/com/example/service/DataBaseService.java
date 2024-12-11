@@ -1,5 +1,6 @@
 package com.example.service;
 
+import com.example.models.User;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 public class DataBaseService {
     private static final String CONNECTION_STRING = "mongodb+srv://admin:admin123@cluster0.w6861.mongodb.net/";
@@ -98,5 +100,30 @@ public class DataBaseService {
 
     public void closeConnection() {
         mongoClient.close();
+    }
+
+    public User loginUser(String email, String password) {
+        MongoCollection<Document> collection = getCollection("users");
+        
+        // Kullanıcıyı e-posta ve şifre ile sorgula
+        Document userDoc = collection.find(Filters.and(
+            Filters.eq("email", email),
+            Filters.eq("password_hash", password)
+        )).first();
+        
+        if (userDoc != null) {
+            // MongoDB'den dönen Document'i User modeline dönüştür
+            return new User(
+                userDoc.getObjectId("_id"),
+                userDoc.getString("username"),
+                userDoc.getString("email"),
+                userDoc.getString("password_hash"),
+                userDoc.get("createdAt"), // createdAt değeri LocalDateTime olacak
+                userDoc.getList("csv_files", ObjectId.class)
+            );
+        } else {
+            // Kullanıcı bulunmazsa null döndür
+            return null;
+        }
     }
 }
