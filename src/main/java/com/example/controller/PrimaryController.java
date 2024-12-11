@@ -9,6 +9,8 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -16,10 +18,14 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +53,8 @@ public class PrimaryController {
     @FXML
     private Label userInfoLabel; // Kullanıcı bilgilerini gösterecek Label
 
+    private boolean isLoggedIn = false;
+
     private final CsvService csvService = new CsvService();
     private final DataBaseService dbService = DataBaseService.getInstance();
     private final ObservableList<User> userData = FXCollections.observableArrayList();
@@ -54,6 +62,7 @@ public class PrimaryController {
     public void initialize() {
         // CSV Yükleme Butonu
         uploadButton.setOnAction(event -> loadCSVFile());
+        addButton.setOnAction(event -> showLoginPopup());
 
         // MongoDB Tablosu Ayarları
         if (idColumn != null && nameColumn != null) {
@@ -126,6 +135,22 @@ public class PrimaryController {
         userInfoLabel.setText("Welcome: " + firstUser.getUsername());
     }
     
+    private void showLoginPopup() {
+        if (!isLoggedIn) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/login.fxml"));
+                Stage stage = new Stage();
+                stage.initModality(Modality.APPLICATION_MODAL); // Popup ana pencereyi engeller
+                stage.setScene(new Scene(loader.load()));
+                LoginController controller = loader.getController();
+                controller.setPrimaryController(this);
+                stage.showAndWait();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     private void addUser() {
         try {
