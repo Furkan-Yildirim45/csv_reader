@@ -13,7 +13,7 @@ import java.util.List;
 import org.bson.Document;
 
 public class DataBaseService {
-    private static final String CONNECTION_STRING = "mongodb://localhost:27017";
+    private static final String CONNECTION_STRING = "mongodb+srv://admin:<admin123>@cluster0.w6861.mongodb.net/";
     private static final String DATABASE_NAME = "java";
     private static DataBaseService instance;
 
