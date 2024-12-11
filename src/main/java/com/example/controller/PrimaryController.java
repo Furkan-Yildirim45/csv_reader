@@ -123,7 +123,7 @@ public class PrimaryController {
     
         // İlk kullanıcıyı ekranda göster
         User firstUser = userData.get(0);
-        userInfoLabel.setText("User: " + firstUser.getUsername() + " - Email: " + firstUser.getEmail());
+        userInfoLabel.setText("Welcome: " + firstUser.getUsername());
     }
     
 

@@ -13,15 +13,18 @@
 <VBox alignment="TOP_CENTER" spacing="10" xmlns="http://javafx.com/javafx/8.0.171"
    xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controller.PrimaryController">
 
+   <HBox alignment="CENTER_LEFT" spacing="10">
+      <Label fx:id="userInfoLabel" style="-fx-font-size: 20px; -fx-text-fill: black;"
+         text="Kullanıcı Bilgisi" />
+   </HBox>
+
    <!-- Üst Menü -->
    <HBox spacing="20">
       <!-- Sol Taraf Menü -->
       <HBox alignment="CENTER_LEFT" spacing="20">
          <Button text="Home" />
-         <Button text="Campaign" />
          <Button text="Contact" />
          <Button text="Report" />
-         <Button text="Automation" />
       </HBox>
       <!-- Genişlik sağlamak için boşluk -->
       <!-- Sağ Taraf İkonlar -->
@@ -40,26 +43,34 @@
          </Button>
       </HBox>
    </HBox>
-   <!-- MongoDB Kullanıcı Bilgisi Gösterimi -->
-   <Label fx:id="userInfoLabel" style="-fx-font-size: 20px; color: black;"/>
+
    <!-- İçerik Alanı -->
-   <VBox alignment="TOP_LEFT" spacing="10" VBox.vgrow="ALWAYS">
-      <Label text="Mapping Data" style="-fx-font-size: 16px;" />
-      <TableView fx:id="tableView" VBox.vgrow="ALWAYS" visible="false">
-         <columns>
-            <TableColumn text="ID" fx:id="idColumn" />
-            <TableColumn text="Name" fx:id="nameColumn" />
-         </columns>
-      </TableView>
+   <HBox>
+      <!-- Sol Tarafta CSV Geçmişi -->
+      <VBox prefWidth="100" VBox.vgrow="ALWAYS" style="-fx-background-color: #F4F4F4;" spacing="10">
+         <Label text="CSV Geçmişi"
+            style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10;" />
+         <!-- <ListView fx:id="csvHistoryListView" VBox.vgrow="ALWAYS" /> -->
+      </VBox>
+      <VBox alignment="TOP_LEFT" spacing="10" VBox.vgrow="ALWAYS">
+         <Label text="Mapping Data" style="-fx-font-size: 16px;" />
+         <TableView fx:id="tableView" VBox.vgrow="ALWAYS" visible="false">
+            <columns>
+               <TableColumn text="ID" fx:id="idColumn" />
+               <TableColumn text="Name" fx:id="nameColumn" />
+            </columns>
+         </TableView>
 
-      <TableView fx:id="mongoTableView" VBox.vgrow="ALWAYS" visible="false">
-         <columns>
-            <TableColumn text="ID" fx:id="idColumnMongo" />
-            <TableColumn text="Name" fx:id="nameColumnMongo" />
-         </columns>
-      </TableView>
+         <TableView fx:id="mongoTableView" VBox.vgrow="ALWAYS" visible="false">
+            <columns>
+               <TableColumn text="ID" fx:id="idColumnMongo" />
+               <TableColumn text="Name" fx:id="nameColumnMongo" />
+            </columns>
+         </TableView>
 
-   </VBox>
+      </VBox>
+   </HBox>
+
    <!-- Paddings -->
    <padding>
       <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
