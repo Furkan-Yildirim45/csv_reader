@@ -16,6 +16,9 @@ public class App extends Application {
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/example/primary.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
+            // Stage boyutlarını ayarla
+        primaryStage.setWidth(1280);  // İstediğiniz genişlik
+        primaryStage.setHeight(720); // İstediğiniz yükseklik
         primaryStage.setScene(scene);
         primaryStage.setTitle("CSV Reader");
         primaryStage.show();

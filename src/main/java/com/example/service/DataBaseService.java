@@ -13,7 +13,7 @@ import java.util.List;
 import org.bson.Document;
 
 public class DataBaseService {
-    private static final String CONNECTION_STRING = "mongodb+srv://admin:<admin123>@cluster0.w6861.mongodb.net/";
+    private static final String CONNECTION_STRING = "mongodb+srv://admin:admin123@cluster0.w6861.mongodb.net/";
     private static final String DATABASE_NAME = "java";
     private static DataBaseService instance;
 
@@ -65,7 +65,7 @@ public class DataBaseService {
     // Example methods specific to 'user' and 'csv_files' collections
 
     public List<Document> getAllUsers() {
-        return getAllDocuments("user");
+        return getAllDocuments("users");
     }
 
     public List<Document> getAllCsvFiles() {
@@ -73,7 +73,7 @@ public class DataBaseService {
     }
 
     public void addUser(Document user) {
-        insertDocument("user", user);
+        insertDocument("users", user);
     }
 
     public void addCsvFile(Document csvFile) {
@@ -81,7 +81,7 @@ public class DataBaseService {
     }
 
     public void updateUser(String key, Object value, String updateKey, Object updateValue) {
-        updateDocument("user", key, value, updateKey, updateValue);
+        updateDocument("users", key, value, updateKey, updateValue);
     }
 
     public void updateCsvFile(String key, Object value, String updateKey, Object updateValue) {
@@ -89,7 +89,7 @@ public class DataBaseService {
     }
 
     public void deleteUser(String key, Object value) {
-        deleteDocument("user", key, value);
+        deleteDocument("users", key, value);
     }
 
     public void deleteCsvFile(String key, Object value) {

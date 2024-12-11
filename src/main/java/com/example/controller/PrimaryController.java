@@ -9,6 +9,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -41,6 +42,9 @@ public class PrimaryController {
     @FXML
     private Button addButton;
 
+    @FXML
+    private Label userInfoLabel; // Kullanıcı bilgilerini gösterecek Label
+
     private final CsvService csvService = new CsvService();
     private final DataBaseService dbService = DataBaseService.getInstance();
 
@@ -49,22 +53,22 @@ public class PrimaryController {
     public void initialize() {
         // CSV Yükleme Butonu
         uploadButton.setOnAction(event -> loadCSVFile());
-    
+
         // MongoDB Tablosu Ayarları
         if (idColumn != null && nameColumn != null) {
             idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
             nameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
         }
-    
+
         // MongoDB Kullanıcıları Yükle
-        // loadUsers();
+        loadUsers();
     }
-    
+
     private void loadCSVFile() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select CSV File");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
-    
+
         File file = fileChooser.showOpenDialog(uploadButton.getScene().getWindow());
         if (file != null) {
             csvService.processFile(file, tableView);
@@ -77,25 +81,35 @@ public class PrimaryController {
             }
         }
     }
-    
 
     private void loadUsers() {
         userData.clear();
         for (Document doc : dbService.getAllUsers()) {
             // Document'ten User nesnesi oluştur
+            Object createdAt = doc.get("createdAt");  // MongoDB'den gelen createdAt
+    
             User user = new User(
                     doc.getObjectId("_id"), // _id
                     doc.getString("username"), // username
                     doc.getString("email"), // email
                     doc.getString("passwordHash"), // passwordHash
-                    LocalDateTime.parse(doc.getString("createdAt")), // createdAt (String'den LocalDateTime'a
-                                                                     // dönüştürülüyor)
-                    doc.getList("csvFiles", ObjectId.class) // csvFiles
+                    createdAt,  // createdAt (dönüştürülmüş olarak)
+                    new ArrayList<>() // csvFiles
             );
             userData.add(user);
         }
+    
         mongoTableView.setItems(userData);
+    
+        // İlk kullanıcıyı ekranda göster
+        if (!userData.isEmpty()) {
+            User firstUser = userData.get(0);  // İlk kullanıcıyı al
+            userInfoLabel.setText("User: " + firstUser.getUsername() + " - Email: " + firstUser.getEmail());
+        } else {
+            userInfoLabel.setText("No users found.");
+        }
     }
+    
 
     private void addUser() {
         try {

@@ -3,6 +3,7 @@ package com.example.models;
 import org.bson.types.ObjectId;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 public class User {
@@ -14,12 +15,20 @@ public class User {
     private List<ObjectId> csvFiles;
 
     // Constructor
-    public User(ObjectId id, String username, String email, String passwordHash, LocalDateTime createdAt, List<ObjectId> csvFiles) {
+    public User(ObjectId id, String username, String email, String passwordHash, Object createdAt, List<ObjectId> csvFiles) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.passwordHash = passwordHash;
-        this.createdAt = createdAt;
+        
+        // Eğer createdAt bir String ise, bunu LocalDateTime'a çevir
+        if (createdAt instanceof String) {
+            this.createdAt = LocalDateTime.parse((String) createdAt);
+        } else if (createdAt instanceof java.util.Date) {
+            // Eğer createdAt bir Date objesi ise, bunu LocalDateTime'a çevir
+            this.createdAt = ((java.util.Date) createdAt).toInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
+        }
+        
         this.csvFiles = csvFiles;
     }
 
@@ -72,5 +81,3 @@ public class User {
         this.csvFiles = csvFiles;
     }
 }
-
-
