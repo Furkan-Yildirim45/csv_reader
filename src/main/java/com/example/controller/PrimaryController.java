@@ -1,17 +1,11 @@
 package com.example.controller;
 
-import com.example.models.CsvFile;
 import com.example.models.User;
 import com.example.service.CsvService;
-import com.example.service.DataBaseService;
 
-import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -21,14 +15,9 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import org.bson.Document;
-import org.bson.types.ObjectId;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 public class PrimaryController {
 
@@ -51,19 +40,21 @@ public class PrimaryController {
     private Button addButton;
 
     @FXML
+    private Button registerButton;
+
+    @FXML
     private Label userInfoLabel; // Kullanıcı bilgilerini gösterecek Label
 
     private boolean isLoggedIn = false;
 
     private final CsvService csvService = new CsvService();
-    private final DataBaseService dbService = DataBaseService.getInstance();
-    private final ObservableList<User> userData = FXCollections.observableArrayList();
 
     public void initialize() {
         // CSV Yükleme Butonu
         uploadButton.setOnAction(event -> loadCSVFile());
         addButton.setOnAction(event -> showLoginPopup());
         userInfoLabel.setText("Uknown User");
+        registerButton.setOnAction(event -> showRegisterPopup());
 
         // MongoDB Tablosu Ayarları
         if (idColumn != null && nameColumn != null) {
@@ -85,52 +76,9 @@ public class PrimaryController {
             if (tableView != null) {
                 tableView.setVisible(true);
             }
-            if (mongoTableView != null) {
-                mongoTableView.setVisible(false); // MongoDB tablosunu gizle
-            }
         }
     }
 
-    private void loadUsers() {
-        userData.clear();
-        List<Document> users = dbService.getAllUsers(); // MongoDB'den kullanıcıları al
-    
-        if (users.isEmpty()) {
-            System.out.println("No users found in the database."); // Eğer kullanıcı yoksa
-            userInfoLabel.setText("No users found.");
-            return;
-        }
-    
-        for (Document doc : users) {
-            // Document'ten User nesnesi oluştur
-            Object createdAt = doc.get("createdAt"); // MongoDB'den gelen createdAt
-    
-            User user = new User(
-                    doc.getObjectId("_id"), // _id
-                    doc.getString("username"), // username
-                    doc.getString("email"), // email
-                    doc.getString("passwordHash"), // passwordHash
-                    createdAt, // createdAt
-                    new ArrayList<>() // csvFiles
-            );
-    
-            // Konsola kullanıcı bilgilerini yazdır
-            System.out.println("User ID: " + user.getId());
-            System.out.println("Username: " + user.getUsername());
-            System.out.println("Email: " + user.getEmail());
-            System.out.println("Created At: " + user.getCreatedAt());
-            System.out.println("----------");
-    
-            userData.add(user);
-        }
-    
-        mongoTableView.setItems(userData);
-    
-        // İlk kullanıcıyı ekranda göster
-        User firstUser = userData.get(0);
-        userInfoLabel.setText("Welcome: " + firstUser.getUsername());
-    }
-    
     private void showLoginPopup() {
         if (!isLoggedIn) {
             try {
@@ -147,6 +95,24 @@ public class PrimaryController {
         }
     }
 
+    private void showRegisterPopup() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/register.fxml"));
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL); // Popup ana pencereyi engeller
+            stage.setScene(new Scene(loader.load()));
+    
+            // RegisterController'ı al ve PrimaryController'ı ayarla
+            RegisterController controller = loader.getController();
+            controller.setPrimaryController(this);
+    
+            stage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+
     public void updateUserInfo(User user) {
         if (user != null) {
             // Kullanıcı bilgilerini ekranda göster
@@ -155,52 +121,5 @@ public class PrimaryController {
             // Kullanıcı bilgisi boşsa etiketleri temizle
             userInfoLabel.setText("No user logged in");
         }
-    }
-
-    private void addUser() {
-        try {
-            // Yeni kullanıcı oluştur
-            User newUser = new User(
-                    new ObjectId(), // id
-                    "Yeni Kullanıcı", // username
-                    "yeni@kullanici.com", // email
-                    "hashed_password", // passwordHash
-                    LocalDateTime.now(), // createdAt
-                    new ArrayList<>() // csvFiles
-            );
-
-            // User'ı Document'e dönüştür
-            Document userDoc = new Document()
-                    .append("username", newUser.getUsername())
-                    .append("email", newUser.getEmail())
-                    .append("passwordHash", newUser.getPasswordHash())
-                    .append("createdAt", newUser.getCreatedAt().toString()) // LocalDateTime'ı String'e dönüştür
-                    .append("csvFiles", newUser.getCsvFiles());
-
-            // Veritabanına kullanıcı ekle
-            dbService.addUser(userDoc);
-
-            // Tabloyu güncelle
-            loadUsers();
-
-            // Başarı mesajı göster
-            showAlert("Success", "User added successfully!");
-        } catch (Exception ex) {
-            // Hata mesajı göster
-            showAlert("Error", "Error adding user: " + ex.getMessage());
-        }
-    }
-
-    // CSV dosyasını MongoDB'ye ekleyen metod
-    private void addCsvFileToDatabase(String fileName, List<String[]> content) {
-        CsvFile csvFile = new CsvFile(fileName, content);
-        dbService.addCsvFile(csvFile.toDocument());
-    }
-
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }

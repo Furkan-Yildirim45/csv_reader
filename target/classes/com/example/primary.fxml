@@ -33,6 +33,8 @@
       <HBox alignment="CENTER_RIGHT" spacing="15" HBox.hgrow="ALWAYS">
          <Button fx:id="addButton" text="Login"
             style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-font-size: 14px;" />
+         <Button fx:id="registerButton" text="Register"
+            style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-font-size: 14px;" />
          <Button fx:id="uploadButton" text="Load Csv file"
             style="-fx-background-color: #FF9800; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-font-size: 14px;" />
          <Button style="-fx-background-color: transparent;">
@@ -55,18 +57,11 @@
       </VBox>
       <!-- Sağ Tarafta Mapping Data -->
       <VBox alignment="TOP_LEFT" spacing="10" style="-fx-background-color: #E8E8E8;">
-         <Label text="Mapping Data" style="-fx-font-size: 16px;" />
-         <TableView fx:id="tableView" visible="false">
+         <Label text="Verileri Gör" style="-fx-font-size: 16px;" />
+         <TableView fx:id="tableView" visible="false" VBox.vgrow="ALWAYS" maxWidth="Infinity" maxHeight="Infinity">
             <columns>
                <TableColumn text="ID" fx:id="idColumn" />
                <TableColumn text="Name" fx:id="nameColumn" />
-            </columns>
-         </TableView>
-
-         <TableView fx:id="mongoTableView" visible="false">
-            <columns>
-               <TableColumn text="ID" fx:id="idColumnMongo" />
-               <TableColumn text="Name" fx:id="nameColumnMongo" />
             </columns>
          </TableView>
       </VBox>
