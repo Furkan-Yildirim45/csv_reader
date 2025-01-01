@@ -7,43 +7,40 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bson.Document;
-import org.bson.types.ObjectId;
-
 public class DataBaseService {
-    private static final String CONNECTION_STRING = "mongodb+srv://admin:admin123@cluster0.w6861.mongodb.net/";
-    private static final String DATABASE_NAME = "Java";
     private static DataBaseService instance;
+    private static final String DATABASE_NAME = "Java"; // Uygulama veritabanı adı
 
-    private final MongoClient mongoClient;
-    private final MongoDatabase database;
+    private MongoClient mongoClient;
+    private MongoDatabase database;
+    private String connectionString;
 
+    // Private constructor to prevent direct instantiation
     private DataBaseService() {
-        mongoClient = MongoClients.create(CONNECTION_STRING);
-        database = mongoClient.getDatabase(DATABASE_NAME);
+        this.connectionString = "mongodb+srv://admin:admin123@cluster0.w6861.mongodb.net/";
+        this.mongoClient = MongoClients.create(connectionString);
+        this.database = mongoClient.getDatabase(DATABASE_NAME); // Java veritabanına bağlanıyoruz
+        System.out.println("db ye bağlandı");
     }
 
+    // Singleton pattern for getting the instance
     public static DataBaseService getInstance() {
         if (instance == null) {
-            instance = new DataBaseService();
+            instance = new DataBaseService();  // Create the instance with a default constructor
         }
         return instance;
     }
 
+    // Get a collection from the database
     public MongoCollection<Document> getCollection(String collectionName) {
         return database.getCollection(collectionName);
-    }
-
-    // Read all documents from a collection
-    public List<Document> getAllDocuments(String collectionName) {
-        List<Document> documents = new ArrayList<>();
-        MongoCollection<Document> collection = getCollection(collectionName);
-        collection.find().forEach(documents::add);
-        return documents;
     }
 
     // Insert a document into a collection
@@ -64,55 +61,57 @@ public class DataBaseService {
         collection.deleteOne(Filters.eq(key, value));
     }
 
-    // Example methods specific to 'user' and 'csv_files' collections
-
+    // Example methods specific to 'users' collection
     public List<Document> getAllUsers() {
         return getAllDocuments("users");
     }
 
-    public List<Document> getAllCsvFiles() {
-        return getAllDocuments("csv_files");
+    // Add a new user and authorize them in the database
+    public void addUser(User user) {
+        // Admin bağlantısını kullanarak kullanıcıyı yetkilendir
+        try {
+            // Yeni kullanıcıyı yetkilendirmek için komut oluşturuyoruz
+            Document createUserCommand = new Document("createUser", user.getUsername())
+                .append("pwd", user.getPasswordHash()) // Hashlenmiş şifre
+                .append("roles", List.of(
+                    new Document("role", "readWrite").append("db", DATABASE_NAME) // Kullanıcı rolü
+                ));
+
+            database.runCommand(createUserCommand);  
+
+            System.out.println("Kullanıcı yetkilendirildi.");
+        } catch (Exception e) {
+            System.err.println("Kullanıcı yetkilendirilirken hata oluştu: " + e.getMessage());
+        }
+
+        // Kullanıcıyı "users" koleksiyonuna da ekliyoruz (uygulama veritabanı için)
+        Document document = new Document()
+            .append("username", user.getUsername())
+            .append("email", user.getEmail())
+            .append("password_hash", user.getPasswordHash())
+            .append("createdAt", user.getCreatedAt())
+            .append("csv_files", user.getCsvFiles());
+
+        insertDocument("users", document); // Uygulama koleksiyonuna ekleme
     }
 
-    public void addUser(Document user) {
-        insertDocument("users", user);
+    public boolean isEmailTaken(String email) {
+        MongoCollection<Document> collection = getCollection("users");
+        Document userDoc = collection.find(Filters.eq("email", email)).first();
+        return userDoc != null;
     }
 
-    public void addCsvFile(Document csvFile) {
-        insertDocument("csv_files", csvFile);
-    }
-
-    public void updateUser(String key, Object value, String updateKey, Object updateValue) {
-        updateDocument("users", key, value, updateKey, updateValue);
-    }
-
-    public void updateCsvFile(String key, Object value, String updateKey, Object updateValue) {
-        updateDocument("csv_files", key, value, updateKey, updateValue);
-    }
-
-    public void deleteUser(String key, Object value) {
-        deleteDocument("users", key, value);
-    }
-
-    public void deleteCsvFile(String key, Object value) {
-        deleteDocument("csv_files", key, value);
-    }
-
-    public void closeConnection() {
-        mongoClient.close();
-    }
 
     public User loginUser(String email, String password) {
         MongoCollection<Document> collection = getCollection("users");
-        
-        // Kullanıcıyı e-posta ve şifre ile sorgula
+
+        // Kullanıcıyı e-posta ile sorgula
         Document userDoc = collection.find(Filters.and(
             Filters.eq("email", email),
             Filters.eq("password_hash", password)
         )).first();
-        
-        if (userDoc != null) {
-            // MongoDB'den dönen Document'i User modeline dönüştür
+
+        if (password.equals(userDoc.get("password_hash")) && email.equals(userDoc.get("email"))) {
             return new User(
                 userDoc.getObjectId("_id"),
                 userDoc.getString("username"),
@@ -121,9 +120,21 @@ public class DataBaseService {
                 userDoc.get("createdAt"), // createdAt değeri LocalDateTime olacak
                 userDoc.getList("csv_files", ObjectId.class)
             );
-        } else {
-            // Kullanıcı bulunmazsa null döndür
-            return null;
         }
+
+        // Kullanıcı bulunmazsa veya şifre yanlışsa null döndür
+        return null;
+    }
+
+    // Get all documents from a collection
+    public List<Document> getAllDocuments(String collectionName) {
+        List<Document> documents = new ArrayList<>();
+        MongoCollection<Document> collection = getCollection(collectionName);
+        collection.find().forEach(documents::add);
+        return documents;
+    }
+
+    public void closeConnection() {
+        mongoClient.close();
     }
 }

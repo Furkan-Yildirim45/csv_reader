@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.example.models.User;
+import com.example.service.DataBaseService;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -34,30 +35,31 @@ public class RegisterController {
         String username = usernameField.getText().trim();
         String email = emailField.getText().trim();
         String password = passwordField.getText();
-    
+
         if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
             showAlert("Error", "All fields are required!");
             return;
         }
-    
-        // Şifreyi hashleme (basit bir örnek, gerçek bir hashleme algoritması kullanmalısınız)
-        String passwordHash = Integer.toHexString(password.hashCode());
-    
+
+        // E-posta kontrolü
+        if (DataBaseService.getInstance().isEmailTaken(email)) {
+            showAlert("Error", "Email is already taken!");
+            return;
+        }
+
         // Yeni kullanıcı oluşturma
         User newUser = new User(
-            new org.bson.types.ObjectId(), // Benzersiz bir ObjectId oluşturulur
+            new org.bson.types.ObjectId(),
             username,
             email,
-            passwordHash,
-            LocalDateTime.now(), // Kullanıcının oluşturulma zamanı
-            List.of() // Varsayılan olarak boş bir CSV dosya listesi
+            password,
+            LocalDateTime.now(),
+            List.of() // Boş csv_files listesi
         );
-    
-        // PrimaryController'ı bilgilendirme
-        if (primaryController != null) {
-            primaryController.updateUserInfo(newUser);
-        }
-    
+
+        // Veritabanına kullanıcıyı ekle
+        DataBaseService.getInstance().addUser(newUser);
+
         showAlert("Success", "User registered successfully!");
         closeWindow();
     }
@@ -80,4 +82,3 @@ public class RegisterController {
         alert.showAndWait();
     }
 }
-
