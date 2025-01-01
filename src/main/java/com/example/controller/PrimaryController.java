@@ -8,13 +8,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
 
 import java.io.File;
 import java.io.IOException;
@@ -31,13 +28,9 @@ public class PrimaryController {
     private TableView<User> mongoTableView;
 
     @FXML
-    private TableColumn<User, String> idColumn;
-
-    @FXML
-    private TableColumn<User, String> nameColumn;
-
-    @FXML
     private Button addButton;
+    @FXML
+    private Button addRowButton;
 
     @FXML
     private Button registerButton;
@@ -49,19 +42,16 @@ public class PrimaryController {
 
     private final CsvService csvService = new CsvService();
 
+    private Stage popupStage;
+    private AddRowPopupController popupController;
+
     public void initialize() {
         // CSV Yükleme Butonu
         uploadButton.setOnAction(event -> loadCSVFile());
         addButton.setOnAction(event -> showLoginPopup());
         userInfoLabel.setText("Uknown User");
         registerButton.setOnAction(event -> showRegisterPopup());
-
-        // MongoDB Tablosu Ayarları
-        if (idColumn != null && nameColumn != null) {
-            idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-            nameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
-        }
-
+        addRowButton.setOnAction(event -> openAddRowPopup());
     }
 
     private void loadCSVFile() {
@@ -69,13 +59,16 @@ public class PrimaryController {
         fileChooser.setTitle("Select CSV File");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
 
+        // Dosya seçimi
         File file = fileChooser.showOpenDialog(uploadButton.getScene().getWindow());
         if (file != null) {
-            csvService.processFile(file, tableView);
-            // tableView'ı görünür yapın
-            if (tableView != null) {
-                tableView.setVisible(true);
-            }
+
+            // CSV dosyasını işleyin ve TableView'a ekleyin
+            csvService.processFile(file, tableView); // Dosyayı işleyip TableView'a ekler
+
+            // TableView için sütunlar zaten 'processFile' metodu içinde eklenecek
+            tableView.setVisible(true); // TableView'ı görünür yap
+
         }
     }
 
@@ -101,17 +94,16 @@ public class PrimaryController {
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL); // Popup ana pencereyi engeller
             stage.setScene(new Scene(loader.load()));
-    
+
             // RegisterController'ı al ve PrimaryController'ı ayarla
             RegisterController controller = loader.getController();
             controller.setPrimaryController(this);
-    
+
             stage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    
 
     public void updateUserInfo(User user) {
         if (user != null) {
@@ -122,4 +114,28 @@ public class PrimaryController {
             userInfoLabel.setText("No user logged in");
         }
     }
+
+    // AddRowPopup'u açan metot
+    private void openAddRowPopup() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/addRowPopup.fxml"));
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL); // Popup ana pencereyi engeller
+            stage.setScene(new Scene(loader.load()));
+
+            // RegisterController'ı al ve PrimaryController'ı ayarla
+            AddRowPopupController controller = loader.getController();
+            controller.setParentController(this);
+
+            stage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Yeni satır ekleme metodu
+    public void addRowToTableView(String[] newRow) {
+        tableView.getItems().add(newRow);
+    }
+
 }

@@ -47,25 +47,33 @@
       </HBox>
    </HBox>
 
-   <!-- İçerik Alanı -->
    <HBox spacing="10" style="-fx-background-color: #E8E8E8;">
       <!-- Sol Tarafta CSV Geçmişi -->
-      <VBox prefWidth="200" spacing="10" style="-fx-background-color: #d0d0d0;">
+      <VBox prefWidth="200" spacing="10" style="-fx-background-color: #d0d0d0;" VBox.vgrow="ALWAYS">
          <Label text="CSV Geçmişi"
             style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10;" />
+         <!-- Geçmiş Listesi -->
          <!-- <ListView fx:id="csvHistoryListView" VBox.vgrow="ALWAYS" /> -->
       </VBox>
+
       <!-- Sağ Tarafta Mapping Data -->
-      <VBox alignment="TOP_LEFT" spacing="10" style="-fx-background-color: #E8E8E8;">
+      <VBox alignment="TOP_LEFT" spacing="10" style="-fx-background-color: #E8E8E8;"
+         VBox.vgrow="ALWAYS">
          <Label text="Verileri Gör" style="-fx-font-size: 16px;" />
-         <TableView fx:id="tableView" visible="false" VBox.vgrow="ALWAYS" maxWidth="Infinity" maxHeight="Infinity">
-            <columns>
-               <TableColumn text="ID" fx:id="idColumn" />
-               <TableColumn text="Name" fx:id="nameColumn" />
-            </columns>
+
+         <!-- TableView İçeriği -->
+         <TableView prefWidth="1080" fx:id="tableView" visible="false" VBox.vgrow="ALWAYS"
+            style="-fx-background-color: white;">
+
          </TableView>
       </VBox>
    </HBox>
+   <VBox alignment="TOP_CENTER" spacing="10">
+      <Button text="Satır Ekle"
+         fx:id="addRowButton"
+         style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px;" />
+   </VBox>
+
 
    <!-- Paddings -->
    <padding>
