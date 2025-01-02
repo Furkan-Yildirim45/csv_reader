@@ -24,7 +24,7 @@
       <HBox alignment="CENTER_LEFT" spacing="20">
          <Button text="Home"
             style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 14px;" />
-         <Button text="Contact"
+         <Button text="Contact" onAction="#showContactPopup"
             style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 14px;" />
       </HBox>
       <!-- Sağ Taraf İkonlar -->

@@ -11,6 +11,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -193,37 +194,67 @@ public class PrimaryController {
     }
 
     private void handleLogout() {
-    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-    alert.setTitle("Çıkış Yap");
-    alert.setHeaderText("Çıkış yapmak istediğinizden emin misiniz?");
-    alert.setContentText("Lütfen bir seçim yapın:");
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Çıkış Yap");
+        alert.setHeaderText("Çıkış yapmak istediğinizden emin misiniz?");
+        alert.setContentText("Lütfen bir seçim yapın:");
 
-    ButtonType buttonYes = new ButtonType("Evet");
-    ButtonType buttonNo = new ButtonType("Hayır");
-    alert.getButtonTypes().setAll(buttonYes, buttonNo);
+        ButtonType buttonYes = new ButtonType("Evet");
+        ButtonType buttonNo = new ButtonType("Hayır");
+        alert.getButtonTypes().setAll(buttonYes, buttonNo);
 
-    // Kullanıcı seçim işlemi
-    alert.showAndWait().ifPresent(response -> {
-        if (response == buttonYes) {
-            performLogout();
-        }
-    });
-}
+        // Kullanıcı seçim işlemi
+        alert.showAndWait().ifPresent(response -> {
+            if (response == buttonYes) {
+                performLogout();
+            }
+        });
+    }
 
-private void performLogout() {
-    // Çıkış yapma işlemleri burada gerçekleşir.
-    userInfoLabel.setText("No user logged in");
-    isLoggedIn = false;
-    logoutButton.setVisible(false); // Logout butonunu gizle
-    addButton.setVisible(true);     // Login butonunu tekrar görünür yap
-}
+    private void performLogout() {
+        // Çıkış yapma işlemleri burada gerçekleşir.
+        userInfoLabel.setText("No user logged in");
+        isLoggedIn = false;
+        logoutButton.setVisible(false); // Logout butonunu gizle
+        addButton.setVisible(true); // Login butonunu tekrar görünür yap
+    }
 
-    public void setVisibleLogoutButton(){
+    public void setVisibleLogoutButton() {
         logoutButton.setVisible(true);
     }
-    public void setVisibleLoginButton(){
+
+    public void setVisibleLoginButton() {
         addButton.setVisible(false);
     }
 
+
+    public void showContactPopup() {
+        // Yeni bir pencere (Stage) oluşturun
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle("İletişim Bilgileri");
+
+        // Popup içeriği için VBox oluşturun
+        VBox popupContent = new VBox(10);
+        popupContent.setStyle("-fx-padding: 20; -fx-background-color: #FFFFFF; -fx-alignment: center;");
+
+        // İçerik elemanları
+        Label contactInfo = new Label("Ad: Furkan Yıldırım\nOkul no: 202113709015\n\nAd: Ege Avcı \nOkul no: 202113709026");
+        contactInfo.setStyle("-fx-font-size: 14px;");
+
+        Button closeButton = new Button("Kapat");
+        closeButton.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white;");
+        closeButton.setOnAction(e -> popupStage.close());
+
+        // Elemanları VBox'a ekleyin
+        popupContent.getChildren().addAll(contactInfo, closeButton);
+
+        // Popup sahnesini ayarlayın
+        Scene popupScene = new Scene(popupContent, 300, 200);
+        popupStage.setScene(popupScene);
+
+        // Popup'u göster
+        popupStage.showAndWait();
+    }
 
 }
