@@ -6,7 +6,9 @@ import com.example.service.CsvService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.stage.FileChooser;
@@ -15,6 +17,7 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public class PrimaryController {
 
@@ -34,12 +37,16 @@ public class PrimaryController {
 
     @FXML
     private Button registerButton;
+    @FXML
+    private Button saveButton;
+    @FXML
+    private Button logoutButton;
 
     @FXML
     private Label userInfoLabel; // Kullanıcı bilgilerini gösterecek Label
 
     private boolean isLoggedIn = false;
-
+    List<String> headers;
     private final CsvService csvService = new CsvService();
 
     private Stage popupStage;
@@ -52,6 +59,8 @@ public class PrimaryController {
         userInfoLabel.setText("Uknown User");
         registerButton.setOnAction(event -> showRegisterPopup());
         addRowButton.setOnAction(event -> openAddRowPopup());
+        saveButton.setOnAction(event -> saveCSVFile());
+        logoutButton.setOnAction(event -> handleLogout());
     }
 
     private void loadCSVFile() {
@@ -59,16 +68,15 @@ public class PrimaryController {
         fileChooser.setTitle("Select CSV File");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
 
-        // Dosya seçimi
         File file = fileChooser.showOpenDialog(uploadButton.getScene().getWindow());
         if (file != null) {
+            headers = csvService.getCsvHeaders(file);
 
-            // CSV dosyasını işleyin ve TableView'a ekleyin
-            csvService.processFile(file, tableView); // Dosyayı işleyip TableView'a ekler
+            csvService.processFile(file, tableView); // Verileri ekle
 
-            // TableView için sütunlar zaten 'processFile' metodu içinde eklenecek
-            tableView.setVisible(true); // TableView'ı görünür yap
-
+            tableView.setVisible(true); // TableView'i görünür yap
+            saveButton.setVisible(true); // Kaydet butonunu görünür yap
+            addRowButton.setVisible(true);
         }
     }
 
@@ -125,7 +133,12 @@ public class PrimaryController {
 
             // RegisterController'ı al ve PrimaryController'ı ayarla
             AddRowPopupController controller = loader.getController();
-            controller.setParentController(this);
+            controller.setPopupStage(stage);
+            if (headers != null) {
+                controller.setParentController(this, headers);
+            } else {
+                System.out.println("headers is null");
+            }
 
             stage.showAndWait();
         } catch (IOException e) {
@@ -133,9 +146,84 @@ public class PrimaryController {
         }
     }
 
-    // Yeni satır ekleme metodu
     public void addRowToTableView(String[] newRow) {
         tableView.getItems().add(newRow);
     }
+
+    private void saveCSVFile() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save CSV File");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+
+        // Kullanıcının dosya kaydetmek için seçtiği yer
+        File file = fileChooser.showSaveDialog(saveButton.getScene().getWindow());
+        if (file != null) {
+            try {
+                // TableView'daki verileri alın
+                List<String[]> data = tableView.getItems();
+
+                // CSV'yi kaydedin
+                csvService.saveToCsv(file, headers, data);
+
+                // Kaydetme işlemi başarılı olduğunda bir mesaj göster
+                showSaveSuccessMessage(file.getAbsolutePath());
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                // Hata durumunda bir hata mesajı göster
+                showErrorMessage("CSV dosyası kaydedilemedi.");
+            }
+        }
+    }
+
+    private void showSaveSuccessMessage(String filePath) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Başarılı");
+        alert.setHeaderText("Kaydetme Tamamlandı");
+        alert.setContentText("CSV dosyası başarıyla kaydedildi: \n" + filePath);
+        alert.showAndWait(); // Kullanıcının mesajı kapatmasını bekler
+    }
+
+    private void showErrorMessage(String errorMessage) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Hata");
+        alert.setHeaderText("Kaydetme Başarısız");
+        alert.setContentText(errorMessage);
+        alert.showAndWait(); // Kullanıcının mesajı kapatmasını bekler
+    }
+
+    private void handleLogout() {
+    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+    alert.setTitle("Çıkış Yap");
+    alert.setHeaderText("Çıkış yapmak istediğinizden emin misiniz?");
+    alert.setContentText("Lütfen bir seçim yapın:");
+
+    ButtonType buttonYes = new ButtonType("Evet");
+    ButtonType buttonNo = new ButtonType("Hayır");
+    alert.getButtonTypes().setAll(buttonYes, buttonNo);
+
+    // Kullanıcı seçim işlemi
+    alert.showAndWait().ifPresent(response -> {
+        if (response == buttonYes) {
+            performLogout();
+        }
+    });
+}
+
+private void performLogout() {
+    // Çıkış yapma işlemleri burada gerçekleşir.
+    userInfoLabel.setText("No user logged in");
+    isLoggedIn = false;
+    logoutButton.setVisible(false); // Logout butonunu gizle
+    addButton.setVisible(true);     // Login butonunu tekrar görünür yap
+}
+
+    public void setVisibleLogoutButton(){
+        logoutButton.setVisible(true);
+    }
+    public void setVisibleLoginButton(){
+        addButton.setVisible(false);
+    }
+
 
 }

@@ -15,6 +15,6 @@
     </HBox>
 
     <!-- Ekle butonu -->
-    <Button text="Ekle" />
+    <Button text="Ekle" fx:id="addButton"/>
 
 </VBox>

@@ -161,19 +161,32 @@ public class CsvService {
         }
     }
 
-    // CSV dosyasını okuma işlemi
-    public List<String[]> readCsv(File file) {
-        List<String[]> data = new ArrayList<>();
+    // Yeni: Başlıkları döndüren metot
+    public List<String> getCsvHeaders(File file) {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                data.add(line.split(","));
+            String headerLine = br.readLine();
+            if (headerLine != null) {
+                return Arrays.asList(headerLine.split(","));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return data;
+        return null;
     }
 
+    public void saveToCsv(File file, List<String> headers, List<String[]> data) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            // Header'ları yaz
+            writer.write(String.join(",", headers));
+            writer.newLine();
+    
+            // Verileri yaz
+            for (String[] row : data) {
+                writer.write(String.join(",", row));
+                writer.newLine();
+            }
+        }
+    }
+    
 
 }

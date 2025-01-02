@@ -26,8 +26,6 @@
             style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 14px;" />
          <Button text="Contact"
             style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 14px;" />
-         <Button text="Report"
-            style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 14px;" />
       </HBox>
       <!-- Sağ Taraf İkonlar -->
       <HBox alignment="CENTER_RIGHT" spacing="15" HBox.hgrow="ALWAYS">
@@ -37,10 +35,10 @@
             style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-font-size: 14px;" />
          <Button fx:id="uploadButton" text="Load Csv file"
             style="-fx-background-color: #FF9800; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-font-size: 14px;" />
-         <Button style="-fx-background-color: transparent;">
+         <Button  fx:id="logoutButton" style="-fx-background-color: transparent;" visible="false">
             <graphic>
                <ImageView fitWidth="32" fitHeight="32">
-                  <Image url="file:src/main/resources/images/settings.png" />
+                  <Image url="file:src/main/resources/images/logout.png" />
                </ImageView>
             </graphic>
          </Button>
@@ -68,11 +66,15 @@
          </TableView>
       </VBox>
    </HBox>
-   <VBox alignment="TOP_CENTER" spacing="10">
+   <HBox alignment="CENTER" spacing="10">
       <Button text="Satır Ekle"
-         fx:id="addRowButton"
+         fx:id="addRowButton" visible="false"
          style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px;" />
-   </VBox>
+      <Button text="Kaydet"
+         fx:id="saveButton"
+         visible="false"
+         style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px;" />
+   </HBox>
 
 
    <!-- Paddings -->

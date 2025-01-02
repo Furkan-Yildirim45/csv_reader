@@ -1,10 +1,10 @@
 package com.example.controller;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -14,18 +14,25 @@ public class AddRowPopupController {
     @FXML
     private HBox fieldsContainer; // TextField'ların yer alacağı konteyner
 
+    @FXML
+    private Button addButton;
+
     private PrimaryController parentController;
     private Stage popupStage;
     private List<TextField> textFields = new ArrayList<>();
 
-    public void setParentController(PrimaryController parentController) {
-        this.parentController = parentController;
-        createTextFields();
+    public void initialize() {
+        addButton.setOnAction(event -> addRowToTableView());
     }
 
-    private void createTextFields() {
+    public void setParentController(PrimaryController parentController, List<String> headers) {
+        this.parentController = parentController;
+        createTextFields(headers);
+    }
+
+    private void createTextFields(List<String> headers) {
         // Sütun başlıklarına göre TextField'lar oluşturulacak
-        List<String> columnHeaders = Arrays.asList("Column 1", "Column 2", "Column 3"); // Başlıklar burada manuel tanımlandı
+        List<String> columnHeaders = headers; // Başlıklar burada manuel tanımlandı
 
         for (String header : columnHeaders) {
             TextField textField = new TextField();

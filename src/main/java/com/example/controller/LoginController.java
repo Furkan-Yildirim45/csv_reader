@@ -56,6 +56,9 @@ public class LoginController {
     
             // Login başarılıysa popup'ı kapat
             loginButton.getScene().getWindow().hide();
+            primaryController.setVisibleLogoutButton();
+            primaryController.setVisibleLoginButton();
+
         } else {
             // Eğer kullanıcı doğrulanamazsa hata mesajı göster
             errorLabel.setText("Invalid credentials!");
